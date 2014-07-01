@@ -37,11 +37,11 @@ namespace FootballDescent
 
             for (int goes = 0; goes < 1; goes++)
             {
-                for (int i = 0; i < 10000000; i++)
+                for (int i = 0; i < 20000000; i++)
                     GradDown(parser.Games);
 
                 foreach (Player p in parser.Players.OrderByDescending(x => x.Quality))
-                    Console.WriteLine("{0, 12} {1}", p.Name, p.Quality.ToString("0.000"));
+                    Console.WriteLine("{0, 12} {1}", p.Name, p.Quality.ToString("0.00"));
             }
 
             Console.ReadLine();
@@ -62,13 +62,13 @@ namespace FootballDescent
                 pred -= g.TB[i].Quality;
             }
 
-            double diff = (g.GoalDiff - pred) / 1000f;
+            //pred *= Math.Abs(pred);
+
+            double diff = (g.GoalDiff - pred) * Math.Abs(g.GoalDiff - pred) / 10000f;
 
             for (int i = 0; i < 5; i++)
             {
-                if(g.TA[i].GamesPlayed > 5)
                     g.TA[i].Quality += diff;
-                if (g.TB[i].GamesPlayed > 5)
                     g.TB[i].Quality -= diff;
             }
         }
