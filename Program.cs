@@ -35,14 +35,11 @@ namespace FootballDescent
             CsvParser parser = new CsvParser();
             parser.Go();
 
-            for (int goes = 0; goes < 1; goes++)
-            {
-                for (int i = 0; i < 20000000; i++)
-                    GradDown(parser.Games);
+            for (int i = 0; i < 5000000; i++)
+                GradDown(parser.Games);
 
-                foreach (Player p in parser.Players.OrderByDescending(x => x.Quality))
-                    Console.WriteLine("{0, 12} {1}", p.Name, p.Quality.ToString("0.00"));
-            }
+            foreach (Player p in parser.Players.Where(x => x.Quality != 0).OrderByDescending(x => x.Quality))
+                Console.WriteLine("{0, 11} {1, 5}", p.Name, p.Quality.ToString("0.00"));
 
             Console.ReadLine();
         }
@@ -62,14 +59,15 @@ namespace FootballDescent
                 pred -= g.TB[i].Quality;
             }
 
-            //pred *= Math.Abs(pred);
-
-            double diff = (g.GoalDiff - pred) * Math.Abs(g.GoalDiff - pred) / 10000f;
+            double diff = Math.Abs(g.GoalDiff) - Math.Abs(pred);
+            diff = diff * diff;
+            diff = diff * Math.Sign(g.GoalDiff - pred);
+            diff = diff / 10000f;
 
             for (int i = 0; i < 5; i++)
             {
-                    g.TA[i].Quality += diff;
-                    g.TB[i].Quality -= diff;
+                g.TA[i].Quality += diff;
+                g.TB[i].Quality -= diff;
             }
         }
     }
