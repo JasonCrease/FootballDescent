@@ -10,18 +10,11 @@ namespace FootBackprop
     {
         static void Main(string[] args)
         {
-            CsvParser csvParser = new CsvParser();
-            csvParser.Go();
-
-            int playerCount = 25;
             Random rnd = new Random(1);
+            GameData.Build();
 
-            double[] whoPlayed = new double[playerCount];
-            double[] playerSkills = new double[playerCount];
-            double[] yValues; // outputs
-
-            int numInput = playerCount;
-            int numHidden = playerCount;
+            int numInput = GameData.PlayerCount;
+            int numHidden = GameData.PlayerCount * 2;
             int numOutput = 1;
             int numWeights = (numInput * numHidden) + (numHidden * numOutput) + (numHidden + numOutput);
 
@@ -34,7 +27,7 @@ namespace FootBackprop
             Console.WriteLine("\nGenerating random initial weights and bias values");
             double[] initWeights = new double[numWeights];
             for (int i = 0; i < initWeights.Length; ++i)
-              initWeights[i] = (0.1 - 0.01) * rnd.NextDouble() + 0.01;
+                initWeights[i] = (rnd.NextDouble() - 0.5d) * 0.1d;
 
             Console.WriteLine("\nInitial weights and biases are:");
             Helpers.ShowVector(initWeights, 3, 8, true);
@@ -46,7 +39,7 @@ namespace FootBackprop
             double momentum = 0.1; // momentum - to discourage oscillation.
             Console.WriteLine("Setting learning rate = " + learnRate.ToString("F2") + " and momentum = " + momentum.ToString("F2"));
 
-            int maxEpochs = 40000;
+            int maxEpochs = 150000;
             double errorThresh = 0.00001;
             Console.WriteLine("\nSetting max epochs = " + maxEpochs + " and error threshold = " + errorThresh.ToString("F6"));
 
@@ -57,20 +50,24 @@ namespace FootBackprop
             while (epoch < maxEpochs) // train
             {
                 int gameNum = rnd.Next(GameData.GameCount);
-                whoPlayed = GameData.GetWhoPlayed(gameNum);
+                double[] whoPlayed = GameData.GetWhoPlayed(gameNum);
                 double result = GameData.GetGameResult(gameNum);
-                double[] xValues = Helpers.MultiplyVectors(whoPlayed, playerSkills);
+                double[] predictedResult = bnn.ComputeOutputs(whoPlayed);
 
-                if (epoch % 100 == 0) Console.WriteLine("epoch = " + epoch);
-
-                error = GetTotalError(playerSkills, bnn);
-                if (error < errorThresh)
-                {
-                    Console.WriteLine("Found weights and bias values that meet the error criterion at epoch " + epoch);
-                    break;
-                }
-                bnn.UpdateWeights(new [] {result}, learnRate, learnRate);
+                bnn.UpdateWeights(new[] { result }, learnRate, learnRate);
                 ++epoch;
+
+                if (epoch % 1000 == 0)
+                {
+                    error = GetTotalError(bnn);
+                    if (error < errorThresh)
+                    {
+                        Console.WriteLine("Found weights and bias values that meet the error criterion at epoch " + epoch);
+                        break;
+                    }
+                    Console.WriteLine("epoch = " + epoch);
+                    Console.WriteLine("error = " + error);
+                }
             } // train loop
 
             double[] finalWeights = bnn.GetWeights();
@@ -82,15 +79,14 @@ namespace FootBackprop
             Console.ReadLine();
         }
 
-        private static double GetTotalError(double[] playerSkills, BackPropNeuralNet bnn)
+        private static double GetTotalError(BackPropNeuralNet bnn)
         {
-            double[] whoPlayed;
             double totalError = 0d;
+
             for (int i = 0; i < GameData.GameCount; i++)
             {
-                whoPlayed = GameData.GetWhoPlayed(i);
-                double[] xValues = Helpers.MultiplyVectors(whoPlayed, playerSkills);
-                double predictedResult = bnn.ComputeOutputs(xValues)[0];
+                double[] whoPlayed = GameData.GetWhoPlayed(i);
+                double predictedResult = bnn.ComputeOutputs(whoPlayed)[0];
                 double actualResult = GameData.GetGameResult(i);
                 totalError += (predictedResult - actualResult) * (predictedResult - actualResult);
             }

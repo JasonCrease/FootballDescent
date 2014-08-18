@@ -45,7 +45,6 @@
     <Compile Include="CsvParser.cs" />
     <Compile Include="GameData.cs" />
     <Compile Include="Helpers.cs" />
-    <Compile Include="Program2.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
