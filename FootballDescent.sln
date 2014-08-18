@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FootballDescent", "FootballDescent.csproj", "{1E36699C-9A9B-4285-92D3-9F42F6FF5A25}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FootBackprop", "FootBackprop\FootBackprop.csproj", "{F608EA1C-3D2D-4CFB-AEEB-505F2EAD031C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{1E36699C-9A9B-4285-92D3-9F42F6FF5A25}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E36699C-9A9B-4285-92D3-9F42F6FF5A25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E36699C-9A9B-4285-92D3-9F42F6FF5A25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F608EA1C-3D2D-4CFB-AEEB-505F2EAD031C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F608EA1C-3D2D-4CFB-AEEB-505F2EAD031C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F608EA1C-3D2D-4CFB-AEEB-505F2EAD031C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F608EA1C-3D2D-4CFB-AEEB-505F2EAD031C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

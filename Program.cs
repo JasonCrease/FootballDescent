@@ -6,25 +6,6 @@ using System.Threading.Tasks;
 
 namespace FootballDescent
 {
-    class Player
-    {
-        public string Name { get; private set; }
-        public double Quality;
-        public int GamesPlayed = 0;
-
-        public Player(string name, double quality)
-        {
-            Name = name;
-            Quality = quality;
-        }
-    }
-
-    class Game
-    {
-        public double GoalDiff { get; set; }
-        public Player[] TA = new Player[5];
-        public Player[] TB = new Player[5];
-    }
 
     class Program
     {

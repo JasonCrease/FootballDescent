@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace FootballDescent
+namespace FootBackprop
 {
     internal class CsvParser
     {
@@ -12,10 +12,12 @@ namespace FootballDescent
         public Player[] Players { get; private set; }
         private List<Game> gs = new List<Game>();
         private Dictionary<string, Player> ps = new Dictionary<string, Player>();
+        public double[][] WhoPlayed;
+        public double[] Results;
 
         public void Go()
         {
-            StreamReader sr = new StreamReader(".\\..\\..\\Results.csv");
+            StreamReader sr = new StreamReader(".\\..\\..\\..\\Results.csv");
             string contents = sr.ReadToEnd().Replace("\r", "");
             sr.Dispose();
 
@@ -38,12 +40,12 @@ namespace FootballDescent
             for (int i = 0; i < 101; i++)
             {
                 Game g = new Game();
-                g.GoalDiff = double.Parse(x[i*10 + 1].Split(',')[2]);
+                g.GoalDiff = double.Parse(x[i * 10 + 1].Split(',')[2]);
 
                 for (int a = 0; a < 5; a++)
-                    g.TA[a] = ps[x[(i*10) + a + 1].Split(',')[0]];
+                    g.TA[a] = ps[x[(i * 10) + a + 1].Split(',')[0]];
                 for (int b = 0; b < 5; b++)
-                    g.TB[b] = ps[x[(i*10) + b + 6].Split(',')[0]];
+                    g.TB[b] = ps[x[(i * 10) + b + 6].Split(',')[0]];
 
                 if (g.TA.All(z => z.GamesPlayed > 0) && g.TB.All(z => z.GamesPlayed > 0))
                     gs.Add(g);
@@ -52,29 +54,23 @@ namespace FootballDescent
             Games = gs.ToArray();
             Players = ps.Select(z => z.Value).ToArray();
 
-            System.Text.StringBuilder sb = new StringBuilder();
-            sb.Append(",");
-            for (int i = 0; i < Players.Count(); i++)
-            {
-                sb.Append("," + Players[i].Name);
-            }
-            sb.AppendLine();
+            int playerCount = Players.Count();
+            Results = new double[Games.Count()];
+            WhoPlayed = new double[Games.Count()][];
 
-            foreach (Game g in Games)
+            for (int i=0; i< Games.Count(); i++)
             {
-                sb.Append(g.GoalDiff + ",");
-                for (int i = 0; i < Players.Count(); i++)
+                Game g = Games[i];
+                Results[i] = g.GoalDiff;
+
+                WhoPlayed[i] = new double[playerCount];
+                for (int j = 0; j < playerCount; j++)
                 {
-                    if (g.TA.Contains(Players[i])) sb.Append(", 1");
-                    else if (g.TB.Contains(Players[i])) sb.Append(",-1");
-                    else sb.Append(", 0");
+                    if (g.TA.Contains(Players[i])) WhoPlayed[i][j] = 1;
+                    else if (g.TB.Contains(Players[i])) WhoPlayed[i][j] = -1;
+                    else WhoPlayed[i][j] = 0;
                 }
-                sb.AppendLine();
             }
-
-            StreamWriter sw = new StreamWriter(".\\..\\..\\Matrix.csv");
-            sw.Write(sb.ToString());
-            sw.Close();
         }
     }
 
