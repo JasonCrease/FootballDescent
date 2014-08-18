@@ -40,6 +40,7 @@ namespace FootballDescent
 
             foreach (Player p in parser.Players.Where(x => x.Quality != 0).OrderByDescending(x => x.Quality))
                 Console.WriteLine("{0, 11} {1, 5}", p.Name, p.Quality.ToString("0.00"));
+                //Console.WriteLine("{0},{1}", p.Name, p.Quality.ToString("0.00"));
 
             Console.ReadLine();
         }
@@ -62,12 +63,26 @@ namespace FootballDescent
             double diff = Math.Abs(g.GoalDiff) - Math.Abs(pred);
             diff = diff * diff;
             diff = diff * Math.Sign(g.GoalDiff - pred);
-            diff = diff / 10000f;
+            diff = diff / 1000f;
+
+            int gameBoundary = 0;
+            double teamAValids = 0;
+            double teamBValids = 0;
+
+            for (int i = 0; i < 5; i++)
+                if (g.TA[i].GamesPlayed > gameBoundary)
+                    teamAValids++;
+            for (int i = 0; i < 5; i++)
+                if (g.TB[i].GamesPlayed > gameBoundary)
+                    teamBValids++;
 
             for (int i = 0; i < 5; i++)
             {
-                g.TA[i].Quality += diff;
-                g.TB[i].Quality -= diff;
+                if (g.TA[i].GamesPlayed > gameBoundary)
+                    g.TA[i].Quality += (diff / teamAValids);
+
+                if (g.TB[i].GamesPlayed > gameBoundary)
+                    g.TB[i].Quality -= (diff / teamBValids);
             }
         }
     }
