@@ -29,8 +29,14 @@ namespace FootBackprop
 
     class GameData
     {
+        static int s_GameCount = 0;
+
         public static int GameCount {
-            get { return WhoPlayed.Length; }
+            get {
+                if (s_GameCount == 0)
+                    s_GameCount = WhoPlayed.Length;
+                return s_GameCount;
+            }
         }
 
         public static double[][] WhoPlayed;
@@ -46,13 +52,19 @@ namespace FootBackprop
             return Results[gameNum];
         }
 
+        static int s_PlayerCount = 0;
+
         public static int PlayerCount
         {
-            get { return WhoPlayed[0].Length; }
+            get {
+                if (s_PlayerCount == 0)
+                    s_PlayerCount = WhoPlayed[0].Length;
+                return s_PlayerCount;
+            }
         }
 
-        public static Game[] Games { get; private set; }
-        public static Player[] Players { get; private set; }
+        private static Game[] Games { get; set; }
+        private static Player[] Players { get; set; }
         private static List<Game> gs = new List<Game>();
         private static Dictionary<string, Player> ps = new Dictionary<string, Player>();
 
@@ -102,7 +114,7 @@ namespace FootBackprop
             for (int i = 0; i < Games.Count(); i++)
             {
                 Game g = Games[i];
-                Results[i] = (g.GoalDiff / 30f);
+                Results[i] = Conv(g.GoalDiff);
 
                 WhoPlayed[i] = new double[playerCount];
                 for (int j = 0; j < playerCount; j++)
@@ -112,6 +124,19 @@ namespace FootBackprop
                     else WhoPlayed[i][j] = 0;
                 }
             }
+        }
+
+        private const double ToAdd = 15f;
+        private const double Factor = 40f;
+
+        public static double Conv(double x)
+        {
+            return (x + ToAdd) / Factor;
+        }
+
+        public static double RevConv(double x)
+        {
+            return (x * Factor) - ToAdd;
         }
     }
 }

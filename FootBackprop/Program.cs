@@ -14,7 +14,7 @@ namespace FootBackprop
             GameData.Build();
 
             int numInput = GameData.PlayerCount;
-            int numHidden = GameData.PlayerCount * 2;
+            int numHidden = GameData.PlayerCount;
             int numOutput = 1;
             int numWeights = (numInput * numHidden) + (numHidden * numOutput) + (numHidden + numOutput);
 
@@ -27,7 +27,7 @@ namespace FootBackprop
             Console.WriteLine("\nGenerating random initial weights and bias values");
             double[] initWeights = new double[numWeights];
             for (int i = 0; i < initWeights.Length; ++i)
-                initWeights[i] = (rnd.NextDouble() - 0.5d) * 0.1d;
+                initWeights[i] = (rnd.NextDouble() - 0.5d) * 0.3d;
 
             Console.WriteLine("\nInitial weights and biases are:");
             Helpers.ShowVector(initWeights, 3, 8, true);
@@ -35,11 +35,11 @@ namespace FootBackprop
             Console.WriteLine("Loading neural network initial weights and biases into neural network");
             bnn.SetWeights(initWeights);
 
-            double learnRate = 0.5;  // learning rate - controls the maginitude of the increase in the change in weights.
-            double momentum = 0.1; // momentum - to discourage oscillation.
+            double learnRate = 0.1;  // learning rate - controls the maginitude of the increase in the change in weights.
+            double momentum = 0.01; // momentum - to discourage oscillation.
             Console.WriteLine("Setting learning rate = " + learnRate.ToString("F2") + " and momentum = " + momentum.ToString("F2"));
 
-            int maxEpochs = 150000;
+            int maxEpochs = 300000;
             double errorThresh = 0.00001;
             Console.WriteLine("\nSetting max epochs = " + maxEpochs + " and error threshold = " + errorThresh.ToString("F6"));
 
@@ -59,7 +59,7 @@ namespace FootBackprop
 
                 if (epoch % 1000 == 0)
                 {
-                    error = GetTotalError(bnn);
+                    error = GetTotalError(bnn, false);
                     if (error < errorThresh)
                     {
                         Console.WriteLine("Found weights and bias values that meet the error criterion at epoch " + epoch);
@@ -75,11 +75,12 @@ namespace FootBackprop
             Console.WriteLine("Final neural network weights and bias values are:");
             Helpers.ShowVector(finalWeights, 5, 8, true);
 
+            GetTotalError(bnn, true);
 
             Console.ReadLine();
         }
 
-        private static double GetTotalError(BackPropNeuralNet bnn)
+        private static double GetTotalError(BackPropNeuralNet bnn, bool print)
         {
             double totalError = 0d;
 
@@ -89,8 +90,13 @@ namespace FootBackprop
                 double predictedResult = bnn.ComputeOutputs(whoPlayed)[0];
                 double actualResult = GameData.GetGameResult(i);
                 totalError += (predictedResult - actualResult) * (predictedResult - actualResult);
+                if (print)
+                    Console.WriteLine("Predicted {0:0.00} was {1:0.00} ", GameData.RevConv(predictedResult), GameData.RevConv(actualResult));
             }
-            //Console.WriteLine("Total error is: {0}", totalError);
+
+            if (print)
+                Console.WriteLine("Total error is: {0:0.000}", totalError);
+
             return totalError;
         }
     } // Program
