@@ -64,7 +64,7 @@ namespace FootBackprop
         }
 
         private static Game[] Games { get; set; }
-        private static Player[] Players { get; set; }
+        public static Player[] Players { get; set; }
         private static List<Game> gs = new List<Game>();
         private static Dictionary<string, Player> ps = new Dictionary<string, Player>();
 
@@ -100,12 +100,12 @@ namespace FootBackprop
                 for (int b = 0; b < 5; b++)
                     g.TB[b] = ps[x[(i * 10) + b + 6].Split(',')[0]];
 
-                if (g.TA.All(z => z.GamesPlayed > 4) && g.TB.All(z => z.GamesPlayed > 4))
+                if (g.TA.All(z => z.GamesPlayed > 2) && g.TB.All(z => z.GamesPlayed > 2))
                     gs.Add(g);
             }
 
             Games = gs.ToArray();
-            Players = ps.Select(z => z.Value).Where(z => z.GamesPlayed > 4).ToArray();
+            Players = ps.Select(z => z.Value).Where(z => z.GamesPlayed > 2).ToArray();
 
             int playerCount = Players.Count();
             Results = new double[Games.Count()];
@@ -127,7 +127,7 @@ namespace FootBackprop
         }
 
         private const double ToAdd = 15f;
-        private const double Factor = 40f;
+        private const double Factor = 35f;
 
         public static double Conv(double x)
         {
@@ -137,6 +137,14 @@ namespace FootBackprop
         public static double RevConv(double x)
         {
             return (x * Factor) - ToAdd;
+        }
+
+        internal static int GetIndexOfPlayer(string name)
+        {
+            for(int i=0; i< PlayerCount; i++)
+                if (Players[i].Name == name) return i;
+
+            throw new ApplicationException();
         }
     }
 }

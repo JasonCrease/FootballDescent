@@ -8,13 +8,15 @@ namespace FootBackprop
 {
     class Program
     {
+        private const int testSize = 2;
+
         static void Main(string[] args)
         {
             Random rnd = new Random(1);
             GameData.Build();
 
             int numInput = GameData.PlayerCount;
-            int numHidden = GameData.PlayerCount;
+            int numHidden = (int)(GameData.PlayerCount * 1f);
             int numOutput = 1;
             int numWeights = (numInput * numHidden) + (numHidden * numOutput) + (numHidden + numOutput);
 
@@ -35,11 +37,11 @@ namespace FootBackprop
             Console.WriteLine("Loading neural network initial weights and biases into neural network");
             bnn.SetWeights(initWeights);
 
-            double learnRate = 0.1;  // learning rate - controls the maginitude of the increase in the change in weights.
-            double momentum = 0.01; // momentum - to discourage oscillation.
+            double learnRate = 0.03;  // learning rate - controls the maginitude of the increase in the change in weights.
+            double momentum = 0.0001; // momentum - to discourage oscillation.
             Console.WriteLine("Setting learning rate = " + learnRate.ToString("F2") + " and momentum = " + momentum.ToString("F2"));
 
-            int maxEpochs = 300000;
+            int maxEpochs = 150000;
             double errorThresh = 0.00001;
             Console.WriteLine("\nSetting max epochs = " + maxEpochs + " and error threshold = " + errorThresh.ToString("F6"));
 
@@ -49,7 +51,7 @@ namespace FootBackprop
 
             while (epoch < maxEpochs) // train
             {
-                int gameNum = rnd.Next(GameData.GameCount);
+                int gameNum = rnd.Next(GameData.GameCount - testSize);  //leave 10 games for prediction
                 double[] whoPlayed = GameData.GetWhoPlayed(gameNum);
                 double result = GameData.GetGameResult(gameNum);
                 double[] predictedResult = bnn.ComputeOutputs(whoPlayed);
@@ -78,11 +80,48 @@ namespace FootBackprop
             GetTotalError(bnn, true);
 
             Console.ReadLine();
+
+            int[] team1 = new int[5];
+            int[] team2 = new int[5];
+
+            team1[0] = GameData.GetIndexOfPlayer("Luke");
+            team1[1] = GameData.GetIndexOfPlayer("Daniel");
+            team1[2] = GameData.GetIndexOfPlayer("MC");
+            team1[3] = GameData.GetIndexOfPlayer("Christian");
+            team1[4] = GameData.GetIndexOfPlayer("Pete");
+
+            team2[0] = GameData.GetIndexOfPlayer("Ben");
+            team2[1] = GameData.GetIndexOfPlayer("Elwood");
+            team2[2] = GameData.GetIndexOfPlayer("Nigel");
+            team2[3] = GameData.GetIndexOfPlayer("Clive");
+            team2[4] = GameData.GetIndexOfPlayer("Harry");
+
+            double[] teamsVector = BuildTeam(team1, team2);
+
+            double[] guess = bnn.ComputeOutputs(teamsVector);
+
+            Console.WriteLine("Guessed result {0:0.00}", GameData.RevConv(guess[0]));
+
+            Console.ReadLine();
+        }
+
+        private static double[] BuildTeam(int[] team1, int[] team2)
+        {
+            double[] retVector = new double[GameData.PlayerCount];
+            for (int i = 0; i < GameData.PlayerCount; i++)
+            {
+                if(team1.Contains(i)) retVector[i] = 1;
+                else if(team2.Contains(i)) retVector[i] = -1;
+                else retVector[i] = 0;
+            }
+
+            return retVector;
         }
 
         private static double GetTotalError(BackPropNeuralNet bnn, bool print)
         {
             double totalError = 0d;
+            int score = 0, outof = 0;
 
             for (int i = 0; i < GameData.GameCount; i++)
             {
@@ -90,12 +129,29 @@ namespace FootBackprop
                 double predictedResult = bnn.ComputeOutputs(whoPlayed)[0];
                 double actualResult = GameData.GetGameResult(i);
                 totalError += (predictedResult - actualResult) * (predictedResult - actualResult);
+
+
                 if (print)
-                    Console.WriteLine("Predicted {0:0.00} was {1:0.00} ", GameData.RevConv(predictedResult), GameData.RevConv(actualResult));
+                {
+                    if (i == GameData.GameCount - testSize)
+                        Console.WriteLine("---------------------");
+
+                    Console.WriteLine("Predicted {0:0.00} was {1:0.00} ", GameData.RevConv(predictedResult),
+                        GameData.RevConv(actualResult));
+
+                    if (i >= GameData.GameCount - testSize)
+                    {
+                        if (Math.Sign(GameData.RevConv(predictedResult)) == Math.Sign(GameData.RevConv(actualResult)))
+                            score++;
+                        outof++;
+                    }
+                }
             }
 
             if (print)
                 Console.WriteLine("Total error is: {0:0.000}", totalError);
+            if (print)
+                Console.WriteLine("Accuracy: {0:0.0}%", (score * 100) / outof);
 
             return totalError;
         }
