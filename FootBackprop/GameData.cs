@@ -105,6 +105,7 @@ namespace FootBackprop
             }
 
             Games = gs.ToArray();
+            Shuffle(Games);
             Players = ps.Select(z => z.Value).Where(z => z.GamesPlayed > 2).ToArray();
 
             int playerCount = Players.Count();
@@ -123,6 +124,20 @@ namespace FootBackprop
                     else if (g.TB.Contains(Players[j])) WhoPlayed[i][j] = -1;
                     else WhoPlayed[i][j] = 0;
                 }
+            }
+        }
+
+        private static void Shuffle(Game[] games)
+        {
+            Random r = new Random();
+
+            for (int i = 0; i < 1000; i++)
+            {
+                int r1 = r.Next(0, games.Length);
+                int r2 = r.Next(0, games.Length);
+                Game temp = games[r1];
+                games[r1] = games[r2];
+                games[r2] = temp;
             }
         }
 

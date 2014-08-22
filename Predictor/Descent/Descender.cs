@@ -4,35 +4,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FootballDescent
+namespace Predictor
 {
-
-    class Program
+    public class Descender : IPredictor
     {
         static Random random = new Random();
+        private IEnumerable<Player> Players { get; set; }
 
-        static void Main(string[] args)
+        private static void PrintAverageError(IEnumerable<Game> games, IEnumerable<Player> players)
         {
-            CsvParser parser = new CsvParser();
-            parser.Go();
-
-            for (int i = 0; i < 5000000; i++)
-                GradDown(parser.Games);
-
-            PrintAverageError(parser);
-
-            foreach (Player p in parser.Players.Where(x => x.Quality != 0).OrderByDescending(x => x.Quality))
+            foreach (Player p in players.Where(x => x.Quality != 0).OrderByDescending(x => x.Quality))
                 Console.WriteLine("{0, 11} {1, 5}", p.Name, p.Quality.ToString("0.00"));
-                //Console.WriteLine("{0},{1}", p.Name, p.Quality.ToString("0.00"));
 
-            Console.ReadLine();
-        }
-
-        private static void PrintAverageError(CsvParser parser)
-        {
             double totalError = 0d;
 
-            foreach (Game g in parser.Games)
+            foreach (Game g in games)
             {
                 double pred = 0d;
 
@@ -46,7 +32,7 @@ namespace FootballDescent
                 totalError += diff * diff;
             }
 
-            Console.WriteLine("MSE is: {0:0.000}", totalError / (double)parser.Games.Length);
+            Console.WriteLine("MSE is: {0:0.000}", totalError / (double)games.Count());
         }
 
         private static void GradDown(Game[] games)
@@ -55,9 +41,6 @@ namespace FootballDescent
 
             double pred = 0f;
 
-            //if (!g.TA.All(x => x.GamesPlayed > 3)) return;
-            //if (!g.TB.All(x => x.GamesPlayed > 3)) return;
-
             for (int i = 0; i < 5; i++)
             {
                 pred += g.TA[i].Quality;
@@ -65,7 +48,6 @@ namespace FootballDescent
             }
 
             double diff = g.GoalDiff - pred;
-            //diff = diff * diff * Math.Sign(g.GoalDiff - pred);
             diff = diff / 1000f;
 
             int gameBoundary = 0;
@@ -87,6 +69,34 @@ namespace FootballDescent
                 if (g.TB[i].GamesPlayed > gameBoundary)
                     g.TB[i].Quality -= (diff / teamBValids);
             }
+        }
+
+        public void Configure(IEnumerable<Game> games, IEnumerable<Player> players)
+        {
+            Game[] gameArray = games.ToArray();
+            Players = players;
+
+            for (int i = 0; i < 1000000; i++)
+                GradDown(gameArray);
+        }
+
+        public double Predict(Game g)
+        {
+            double pred = 0f;
+
+            for (int i = 0; i < 5; i++)
+            {
+                pred += g.TA[i].Quality;
+                pred -= g.TB[i].Quality;
+            }
+
+            return pred;
+        }
+
+        public void PrintDebug()
+        {
+            foreach (Player p in Players.Where(x => x.Quality != 0).OrderByDescending(x => x.Quality))
+                Console.WriteLine("{0, 11} {1, 5}", p.Name, p.Quality.ToString("0.00"));
         }
     }
 }
