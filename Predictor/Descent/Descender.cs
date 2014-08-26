@@ -76,7 +76,7 @@ namespace Predictor
             Game[] gameArray = games.ToArray();
             Players = players;
 
-            for (int i = 0; i < 1000000; i++)
+            for (int i = 0; i < 4000000; i++)
                 GradDown(gameArray);
         }
 

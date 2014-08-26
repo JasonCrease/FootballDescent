@@ -37,7 +37,7 @@ namespace Predictor
             BuildGameData(games.ToArray(), m_Players);
 
             int numInput = m_PlayerCount;
-            int numHidden = (int)(numInput * 0.5d);
+            int numHidden = 6;
             int numOutput = 1;
             int numWeights = (numInput * numHidden) + (numHidden * numOutput) + (numHidden + numOutput);
 
@@ -52,18 +52,18 @@ namespace Predictor
             for (int i = 0; i < initWeights.Length; ++i)
                 initWeights[i] = (rnd.NextDouble() - 0.5d) * 0.1d;
 
-            Console.WriteLine("\nInitial weights and biases are:");
-            Helpers.ShowVector(initWeights, 3, 8, true);
+            //Console.WriteLine("\nInitial weights and biases are:");
+            //Helpers.ShowVector(initWeights, 3, 8, true);
 
             Console.WriteLine("Loading neural network initial weights and biases into neural network");
             m_Bnn.SetWeights(initWeights);
 
-            double learnRate = 0.05;  // learning rate - controls the maginitude of the increase in the change in weights.
-            double momentum = 0.0001; // momentum - to discourage oscillation.
+            double learnRate = 0.03;  // learning rate - controls the maginitude of the increase in the change in weights.
+            double momentum = learnRate / 10d; // momentum - to discourage oscillation.
             Console.WriteLine("Setting learning rate = " + learnRate.ToString("F2") + " and momentum = " + momentum.ToString("F2"));
 
-            int maxEpochs = 400000;
-            double errorThresh = 0.00001;
+            int maxEpochs = 8000000;
+            double errorThresh = 0.01;
             Console.WriteLine("\nSetting max epochs = " + maxEpochs + " and error threshold = " + errorThresh.ToString("F6"));
 
             int epoch = 0;
@@ -77,10 +77,10 @@ namespace Predictor
                 double result = GetGameResult(gameNum);
                 double[] predictedResult = m_Bnn.ComputeOutputs(whoPlayed);
 
-                m_Bnn.UpdateWeights(new[] { result }, learnRate, learnRate);
+                m_Bnn.UpdateWeights(new[] { result }, learnRate, momentum);
                 ++epoch;
 
-                if (epoch % 10000 == 0)
+                if (epoch % 20000 == 0)
                 {
                     error = GetTotalError(m_Bnn, true);
 
@@ -96,8 +96,8 @@ namespace Predictor
 
             double[] finalWeights = m_Bnn.GetWeights();
             Console.WriteLine("");
-            Console.WriteLine("Final neural network weights and bias values are:");
-            Helpers.ShowVector(finalWeights, 5, 8, true);
+            //Console.WriteLine("Final neural network weights and bias values are:");
+            //Helpers.ShowVector(finalWeights, 5, 8, true);
         }
 
         private void BuildGameData(Game[] games, Player[] players)

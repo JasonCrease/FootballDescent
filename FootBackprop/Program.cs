@@ -16,7 +16,7 @@ namespace FootBackprop
             GameData.Build();
 
             int numInput = GameData.PlayerCount;
-            int numHidden = 4; //(int)(GameData.PlayerCount * 0.1d);
+            int numHidden = 12; //(int)(GameData.PlayerCount * 0.1d);
             int numOutput = 1;
             int numWeights = (numInput * numHidden) + (numHidden * numOutput) + (numHidden + numOutput);
 

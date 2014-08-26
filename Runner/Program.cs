@@ -17,12 +17,13 @@ namespace Runner
 
         static void Main(string[] args)
         {
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 250; i++)
             {
+                Console.WriteLine("\n\n***  Trial {0}  ***\n\n", i);
                 CsvParser parser = new CsvParser();
-                IEnumerable<Game> games = parser.LoadWithGamesOmmitted(2);
+                IEnumerable<Game> games = parser.LoadWithGamesOmmitted(4);
 
-                IPredictor predictor = new Neural();
+                IPredictor predictor = new Descender();
                 predictor.Configure(parser.Games, parser.Players);
                 predictor.PrintDebug();
 
@@ -34,19 +35,21 @@ namespace Runner
 
         private static void PrintMseError(IEnumerable<Game> games, IPredictor predictor)
         {
-            foreach(Game g in games)
+            foreach (Game g in games)
             {
                 double pred = predictor.Predict(g);
 
-                totalSquaredError += (pred - g.GoalDiff)*(pred - g.GoalDiff);
+                totalSquaredError += (pred - g.GoalDiff) * (pred - g.GoalDiff);
                 totalLinearError += Math.Abs(pred - g.GoalDiff);
-                totalSignError += Math.Sign(g.GoalDiff) == 0 || Math.Sign(pred) == Math.Sign(g.GoalDiff) ? 0 : 1;
+
+                if (Math.Sign(g.GoalDiff) == 0) totalSignError += 0.5d;
+                else if (Math.Sign(pred) != Math.Sign(g.GoalDiff)) totalSignError += 1d;
                 n++;
 
                 Console.WriteLine("Predicted {0:0.00} was {1:0.00}", pred, g.GoalDiff);
             }
 
-            Console.WriteLine("MSE {0:0.00}", totalSquaredError/(double) n);
+            Console.WriteLine("MSE {0:0.00}", totalSquaredError / (double)n);
             Console.WriteLine("MLE {0:0.00}", totalLinearError / (double)n);
             Console.WriteLine("Total Sign Error {0:0.00}", totalSignError / (double)n);
         }

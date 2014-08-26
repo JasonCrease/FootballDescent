@@ -42,6 +42,8 @@ namespace Predictor
                 }
             }
 
+            const int GameThreshold = 5;
+
             for (int i = 0; i < 101; i++)
             {
                 Game g = new Game();
@@ -52,7 +54,7 @@ namespace Predictor
                 for (int b = 0; b < 5; b++)
                     g.TB[b] = ps[x[(i * 10) + b + 6].Split(',')[0]];
 
-                if (g.TA.All(z => z.GamesPlayed > 2) && g.TB.All(z => z.GamesPlayed > 2))
+                if (g.TA.All(z => z.GamesPlayed > 5) && g.TB.All(z => z.GamesPlayed > GameThreshold))
                     gs.Add(g);
             }
 
@@ -65,8 +67,7 @@ namespace Predictor
             }
 
             Games = gs.ToArray();
-            Players = ps.Select(z => z.Value).ToArray();
-
+            Players = ps.Where(z => z.Value.GamesPlayed > GameThreshold).Select(z => z.Value).ToArray();
 
             return gamesOmmitted;
         }
